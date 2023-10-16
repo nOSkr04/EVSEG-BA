@@ -102,3 +102,20 @@ export const deleteBasket = asyncHandler(async (req, res, next) => {
     data: basket,
   });
 });
+export const saveProduct = asyncHandler(async (req, res, next) => {
+  req.body.createUser = req.userId;
+  const user = await User.findById(req.userId);
+  const product = await Product.findById(req.params.id);
+  if (!user) {
+    throw new MyError(req.params.id, 401);
+  }
+  const basket = await Basket.create(product);
+
+  user.savedProduct += 1;
+  user.save();
+
+  res.status(200).json({
+    success: true,
+    data: basket,
+  });
+});

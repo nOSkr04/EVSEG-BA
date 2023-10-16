@@ -29,7 +29,10 @@ export const getProducts = asyncHandler(async (req, res, next) => {
 });
 
 export const getProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).populate({
+    model: "ProductCategory",
+    path: "category",
+  });
 
   if (!product) {
     throw new MyError(req.params.id + " ID-тэй ном байхгүй байна.", 404);
