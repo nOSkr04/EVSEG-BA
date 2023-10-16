@@ -29,10 +29,7 @@ export const getProducts = asyncHandler(async (req, res, next) => {
 });
 
 export const getProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findById(req.params.id).populate({
-    path: "createUser",
-    select: "firstName profile",
-  });
+  const product = await Product.findById(req.params.id);
 
   if (!product) {
     throw new MyError(req.params.id + " ID-тэй ном байхгүй байна.", 404);
