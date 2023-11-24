@@ -100,12 +100,12 @@ var accessLogStream = rfs.createStream("access.log", {
 app.use(morgan("combined", { stream: accessLogStream }));
 
 // REST API RESOURSE
-app.use("/user", usersRoutes);
-app.use("/banner", bannerRoutes);
+app.use("/users", usersRoutes);
+app.use("/banners", bannerRoutes);
 app.use("/media", mediasRoutes);
 app.use("/categories", productCategoryRoutes);
-app.use("/product", productRoutes);
-app.use("/basket", basketRoutes);
+app.use("/products", productRoutes);
+app.use("/baskets", basketRoutes);
 // Алдаа үүсэхэд барьж авч алдааны мэдээллийг клиент тал руу автоматаар мэдээлнэ
 app.use(errorHandler);
 
