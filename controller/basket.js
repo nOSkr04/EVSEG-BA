@@ -12,10 +12,8 @@ export const getBaskets = asyncHandler(async (req, res, next) => {
   const sort = req.query.sort;
   const select = req.query.select;
 
-  // Retrieve the user based on their userId
   const user = await User.findById(req.userId);
 
-  // Check if the user was found
   if (!user) {
     return res.status(404).json({
       success: false,
@@ -23,7 +21,6 @@ export const getBaskets = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Use the user's ID to filter the baskets
   const query = { user_id: user._id }; // Assuming user_id is the field in Basket associated with users
   //   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MmQ0NWRkNWU2NjgwNDEwYzJiNDMyNyIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY5NzQ2NTgyMSwiZXhwIjoxNzI5MDAxODIxfQ.IKf74CBNoSqcu7ggHQCzd7mfiKWeJn_VNJSWQCnSdV0
   // Remove select, sort, page, and limit from the query object
@@ -60,6 +57,37 @@ export const getBasket = asyncHandler(async (req, res, next) => {
     data: basket,
   });
 });
+export const updateBasket = asyncHandler(async (req, res, next) => {
+  const basket = await Basket.findById(req.params.id);
+  const availabeCount = req.body.availabeCount;
+  const user = await User.findById(basket.createUser)
+  if (!user) {
+    throw new MyError(req.params.id, 401);
+  }
+  let diffrence;
+  if(basket.availableCount <= availabeCount){
+    diffrence = availabeCount - basket.availableCount
+    user.basketNumber += diffrence
+  }
+  diffrence = basket.availableCount - availabeCount;
+  user.basketNumber += diffrence
+  await user.save();
+
+  //   .populate({
+  //     path: "createUser",
+  //     select: "firstName profile",
+  //   });
+
+  if (!basket) {
+    throw new MyError(req.params.id + " ID-тэй сагс байхгүй байна.", 404);
+  }
+  await Basket.findByIdAndUpdate(req.params.id,availabeCount);
+
+  res.status(200).json({
+    success: true,
+    data: basket,
+  });
+});
 
 export const createBasket = asyncHandler(async (req, res, next) => {
   req.body.createUser = req.userId;
@@ -87,7 +115,7 @@ export const deleteBasket = asyncHandler(async (req, res, next) => {
   }
 
   if (
-    basket.createUser.toString() !== req.userId &&
+    basket.user.toString() !== req.userId &&
     req.userRole !== "basketmin"
   ) {
     throw new MyError("Та зөвхөн өөрийнхөө номыг л засварлах хэрэгтэй", 403);
@@ -111,8 +139,10 @@ export const saveProduct = asyncHandler(async (req, res, next) => {
   }
   const basket = await Basket.create(product);
 
-  user.savedProduct += 1;
-  user.save();
+  await basket.save();
+  console.log("availabeCount",req.body.availableCount)
+  user.savedProduct += req.body.availableCount;
+  await user.save();
 
   res.status(200).json({
     success: true,

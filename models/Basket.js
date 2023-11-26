@@ -27,6 +27,14 @@ const BasketSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
+    createUser: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User"
+    },
+    updatedUser: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User"
+    }
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
