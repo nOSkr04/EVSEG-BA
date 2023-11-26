@@ -6,8 +6,11 @@ const ProductSchema = new mongoose.Schema(
     name: String,
     price: Number,
     description: String,
-    size: [String],
-    color: [String],
+    size: [{
+      name: String,
+      quantity: Number
+    }],
+    color: String,
     available: {
       type: Boolean,
       default: true,
@@ -28,6 +31,17 @@ const ProductSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
+    subCategory: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    brand: String,
+    SKU: Number,
+    barCode: String,
+    season: String,
+    cleanUp: String,
+    material: String,
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

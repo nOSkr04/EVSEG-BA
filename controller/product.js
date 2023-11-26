@@ -9,7 +9,7 @@ export const getProducts = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const sort = req.query.sort;
-  const select = req.query.select;
+  const select = req.query.select;  
 
   ["select", "sort", "page", "limit"].forEach((el) => delete req.query[el]);
 
@@ -29,10 +29,15 @@ export const getProducts = asyncHandler(async (req, res, next) => {
 });
 
 export const getProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findById(req.params.id).populate({
-    model: "ProductCategory",
-    path: "category",
-  });
+  const product = await Product.findById(req.params.id)
+    .populate([{
+      model: "ProductCategory",
+      path: "category",
+    },
+    {
+      model: "ProductCategory",
+      path: "subCategory"
+    }]);
 
   if (!product) {
     throw new MyError(req.params.id + " ID-тэй ном байхгүй байна.", 404);

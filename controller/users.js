@@ -149,3 +149,139 @@ export const deleteUser = asyncHandler(async (req, res, next) => {
     data: user,
   });
 });
+
+export const invoiceTime = asyncHandler(async (req, res, next) => {
+  const profile = await User.findById(req.params.id);
+  await axios({
+    method: "post",
+    url: "https://merchant.qpay.mn/v2/auth/token",
+    headers: {
+      Authorization: `Basic U0VEVTowYjRrNDJsRA==`,
+    },
+  })
+    .then((response) => {
+      const token = response.data.access_token;
+
+      axios({
+        method: "post",
+        url: "https://merchant.qpay.mn/v2/invoice",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {
+          invoice_code: "SEDU_INVOICE",
+          sender_invoice_no: "12345678",
+          invoice_receiver_code: `${profile.name}`,
+          invoice_description: `Sedu charge ${profile.name}`,
+
+          amount: req.body.amount,
+          callback_url: `https://seduback.com/api/v1/users/callbacks/${req.params.id}/${req.body.amount}`,
+        },
+      })
+        .then(async (response) => {
+          req.body.urls = response.data.urls;
+          req.body.qrImage = response.data.qr_image;
+          req.body.invoiceId = response.data.invoice_id;
+          const wallet = await Wallet.create(req.body);
+          profile.invoiceId = wallet._id;
+          profile.save();
+          res.status(200).json({
+            success: true,
+            data: wallet._id,
+          });
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+        });
+    })
+    .catch((error) => {
+      console.log(error.response.data);
+    });
+});
+
+export const invoiceCheck = asyncHandler(async (req, res) => {
+  await axios({
+    method: "post",
+    url: "https://merchant.qpay.mn/v2/auth/token",
+    headers: {
+      Authorization: `Basic U0VEVTowYjRrNDJsRA==`,
+    },
+  })
+    .then((response) => {
+      const token = response.data.access_token;
+      axios({
+        method: "post",
+        url: "https://merchant.qpay.mn/v2/payment/check",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {
+          object_type: "INVOICE",
+          object_id: req.params.id,
+          page_number: 1,
+          page_limit: 100,
+          callback_url: `https://seduback.com/api/v1/users/check/challbacks/${req.params.id}/${req.params.numId}`,
+        },
+      })
+        .then(async (response) => {
+          const profile = await User.findById(req.params.numId);
+          const count = response.data.count;
+          if (count === 0) {
+            res.status(401).json({
+              success: false,
+            });
+          } else {
+            profile.deadline = Date.now() + 60 * 60 * 1000 * 24 * 90;
+            profile.save();
+            res.status(200).json({
+              success: true,
+              data: profile,
+            });
+          }
+        })
+        .catch((error) => {
+          // console.log(error, "error");
+          console.log("err==================");
+        });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+export const chargeTime = asyncHandler(async (req, res, next) => {
+  const profile = await User.findById(req.params.id);
+  if (profile.deadline < Date.now()) {
+    if (req.params.numId === "150") {
+      profile.deadline = Date.now() + 60 * 60 * 1000 * 24 * 30;
+    } else if (req.params.numId === "15000") {
+      profile.deadline = Date.now() + 60 * 60 * 1000 * 24 * 60;
+    } else if (req.params.numId === "20000") {
+      profile.deadline = Date.now() + 60 * 60 * 1000 * 24 * 90;
+    }
+  } else {
+    if (req.params.numId === "150") {
+      profile.deadline = profile.deadline.getTime() + 60 * 60 * 1000 * 24 * 30;
+    } else if (req.params.numId === "15000") {
+      profile.deadline = profile.deadline.getTime() + 60 * 60 * 1000 * 24 * 60;
+    } else if (req.params.numId === "20000") {
+      profile.deadline = profile.deadline.getTime() + 60 * 60 * 1000 * 24 * 90;
+    }
+  }
+
+  profile.save();
+
+  res.status(200).json({
+    success: true,
+    data: profile,
+  });
+});
+export const postTime = asyncHandler(async (req, res, next) => {
+  const profile = await User.findById(req.body.id);
+  profile.deadline = Date.now() + 60 * 60 * 1000 * 24 * 30;
+  profile.save();
+
+  res.status(200).json({
+    success: true,
+    data: profile,
+  });
+});

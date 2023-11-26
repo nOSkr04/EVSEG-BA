@@ -11,7 +11,7 @@ import {
 
 router
   .route("/")
-  .get(getCategories)
+  .get(getCategories) 
   .post(protect, authorize("admin"), createCategory);
 
 router

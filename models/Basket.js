@@ -2,10 +2,15 @@ import mongoose from "mongoose";
 
 const BasketSchema = new mongoose.Schema(
   {
+    product: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Product",
+    },
     name: String,
     price: Number,
     description: String,
     size: String,
+    quantity: String,
     color: String,
     available: {
       type: Boolean,
@@ -16,13 +21,12 @@ const BasketSchema = new mongoose.Schema(
       blurHash: String,
       url: String,
     },
-    images: [
-      {
-        blurHash: String,
-        url: String,
-      },
-    ],
     category: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    subCategory: {
       type: mongoose.Schema.ObjectId,
       ref: "Category",
       required: true,

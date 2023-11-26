@@ -23,7 +23,7 @@ export const protect = asyncHandler(async (req, res, next) => {
 
   req.userId = tokenObj.id;
   req.userRole = tokenObj.role;
-
+  
   next();
 });
 
