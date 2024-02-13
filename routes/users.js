@@ -28,7 +28,7 @@ router
   .route("/")
   .get(authorize("admin"), getUsers)
   .post(authorize("admin"), createUser);
-router.route("/me").get(protect, authMeUser);
+router.route("/me").get(authMeUser);
 router.route("/:id").get(getUser).put(updateUser).delete(protect, deleteUser);
 
 export default router;
